@@ -150,7 +150,7 @@ h3 {
   font-size: 1.2rem;
 }
 .greetings{
-  background-image: url('@/assets/polished.png');
+  background-image: url('/polished.png');
   background-size: 100% auto;
   padding:5%
 }
