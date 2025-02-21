@@ -42,13 +42,13 @@
 
     </div>
     <div>
-      <a href="http://localhost:5173/araguari">
+      <a href="https://weather.antares.ninja/araguari">
         Go to Araguari 
       </a>
-      <a href="http://localhost:5173/araxa">
+      <a href="https://weather.antares.ninja/araxa">
         Go to Araxa 
       </a>
-      <a href="http://localhost:5173/uberlandia">
+      <a href="https://weather.antares.ninja/uberlandia">
         Go to Uberlandia 
       </a>
     </div>
@@ -150,7 +150,7 @@ h3 {
   font-size: 1.2rem;
 }
 .greetings{
-  background-image: url('./src/assets/polished.png');
+  background-image: url('/polished.png');
   background-size: 100% auto;
   padding:5%
 }

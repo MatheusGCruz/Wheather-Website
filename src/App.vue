@@ -24,7 +24,7 @@ import HomePage from './views/HomePage.vue';
 
 <style scoped>
 .wrapper{
-  background-image: url('./src/assets/rust.jpg');
+  background-image: url('/rust.jpg');
   background-size: 100% auto;
   margin:2px;
   border-radius: 20px;
