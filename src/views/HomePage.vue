@@ -145,6 +145,9 @@ h1 {
   top: -10px;
   color: navy;
 }
+h2{
+  color:midnightblue;
+}
 
 h3 {
   font-size: 1.2rem;
@@ -171,6 +174,7 @@ h3 {
   position: relative;
   display: inline-block;
   cursor: pointer;
+  color: midnightblue;
 }
 
 .tooltip {
