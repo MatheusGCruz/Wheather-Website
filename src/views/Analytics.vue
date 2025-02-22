@@ -9,8 +9,12 @@
         />
         <select v-model="sortKey" class="border p-2 rounded">
           <option value="city">City</option>
-          <option value="averageTemp">Avg Temperature</option>
+          <option value="tempC">Temperature</option>
           <option value="date">Date</option>
+          <option value="windspeedKmph">Wind Speed</option>
+          <option value="humidity">Humidity</option>
+          <option value="chanceofrain">Chance of Rain</option>
+          <option value="uvIndex">UV Index</option>
         </select>
         <button @click="toggleSortOrder" class="p-2 border rounded bg-gray-200">
           {{ sortOrder === 'asc' ? '⬆️' : '⬇️' }}
@@ -19,9 +23,9 @@
       <div class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto ">
         <div v-for="item in filteredAndSortedItems" :key="item.id" class="p-4 border rounded shadow gridItem">
           <h3 class="text-lg font-bold">{{ item.city }}</h3>
-          <p>[ Avg Temperature: {{ item.averageTemp }}ºC ] 
+          <p>[ Temperature: {{ item.tempC }}ºC ] 
             [ Humidity {{ item.humidity }}% ]
-            [ Wind {{item.windspeedKmph }} {{ item.winddir16Point }} ]
+            [ Wind {{item.windspeedKmph }} Km/h {{ item.winddir16Point }} ]
             [ UV index {{ item.uvIndex }} ]
           </p>
           <p>
@@ -42,7 +46,7 @@ import { ref, computed, defineComponent, onMounted } from "vue";
   interface Item {
     id: number;
     city: string;
-    averageTemp: number;
+    tempC: number;
     date: string;
     hour:number;
     humidity:number,
@@ -72,12 +76,12 @@ import { ref, computed, defineComponent, onMounted } from "vue";
         const response = await fetch("https://api.antares.ninja/analytics/");
         const data = await response.json();
         const user = data[0];
-        data.forEach((element: { id: any; city: any; avgtempC: any; date: any; time: any; humidity:any ; winddir16Point:any; windspeedKmph:any; precipMM:any; chanceofrain:any; cloudcover:any; uvIndex:any}) => {
+        data.forEach((element: { id: any; city: any; tempC: any; date: any; time: any; humidity:any ; winddir16Point:any; windspeedKmph:any; precipMM:any; chanceofrain:any; cloudcover:any; uvIndex:any}) => {
           let newdate = new Date(element.date);
           const newItem: Item = {
             id: element.id,
               city: element.city,
-              averageTemp: element.avgtempC,              
+              tempC: element.tempC,              
               date: formatDate(newdate),
               hour: element.time/100,
               humidity : element.humidity,
