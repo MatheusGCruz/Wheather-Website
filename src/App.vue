@@ -15,6 +15,7 @@ import HomePage from './views/HomePage.vue';
       <nav>
         <RouterLink to="/">Welcome to Vue</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/analytics">Analytics</RouterLink>
       </nav>
     </div>
   </header>
