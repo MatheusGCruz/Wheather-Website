@@ -42,9 +42,8 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { defineComponent, computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { defineComponent, onMounted, ref } from 'vue';
+import { getDailyForecast } from '../services/openmeteo';
 
 export default defineComponent({
     props: {
@@ -54,45 +53,30 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const route = useRoute();
     const subdirectory = ref<string>('');
     const loading = ref<boolean>(true);
-    // Get the subdirectory from the route params
-    subdirectory.value = window.location.pathname.slice(1);
-    const city = String(subdirectory).charAt(0).toUpperCase() + String(subdirectory).slice(1);
-    const temperature = 29;
-    const preciptation = 0;
-    const cloudCover = 25;
-    const humidity = 45;
-    const uvIndex = ref<string>('');
-    const visibility = 10;
-    const minTempC = ref<string>('');
-    const maxTempC = ref<string>('');
-    const medTempC = ref<string>('');
-    const returnValue = ref<string>('');
+    const minTempC = ref<number>(0);
+    const maxTempC = ref<number>(0);
+    const medTempC = ref<number>(0);
     const forecastDay = ref<string>('');
-    const sunHour = ref<string>('');
-    const totalSnow = ref<string>('');
+    const sunHour = ref<number>(0);
+    const totalSnow = ref<number>(0);
+    const uvIndex = ref<number>(0);
 
     const fetchData = async () => {
       try {
         subdirectory.value = window.location.pathname.slice(1);
-        const response = await axios.get(`https://api.antares.ninja/forecast/`+subdirectory.value);
+        const forecast = await getDailyForecast(subdirectory.value);
         
-        forecastDay.value = response.data[props.day].date;
-        minTempC.value = response.data[props.day].mintempC;
-        maxTempC.value = response.data[props.day].maxtempC;
-        uvIndex.value = response.data[props.day].uvIndex;
-        returnValue.value = response.data[props.day];
-        medTempC.value = response.data[props.day].avgtempC;
-        sunHour.value = response.data[props.day].sunHour;
-        totalSnow.value = response.data[props.day].totalSnow_cm;
+        forecastDay.value = forecast[Number(props.day)].date;
+        minTempC.value = forecast[Number(props.day)].mintempC;
+        maxTempC.value = forecast[Number(props.day)].maxtempC;
+        uvIndex.value = forecast[Number(props.day)].uvIndex;
+        medTempC.value = forecast[Number(props.day)].avgtempC;
+        sunHour.value = forecast[Number(props.day)].sunHour;
+        totalSnow.value = forecast[Number(props.day)].totalSnow_cm;
 
-
-
-
-
-      } catch (err) {
+      } catch {
         //error.value = (err as Error).message || 'Failed to fetch icon';
       } finally {
         loading.value = false;
@@ -103,7 +87,7 @@ export default defineComponent({
       fetchData();
     });
 
-    return {totalSnow, sunHour, forecastDay,returnValue,minTempC,maxTempC, medTempC, subdirectory, city, temperature,preciptation,cloudCover,humidity,uvIndex,visibility };
+    return {totalSnow, sunHour, forecastDay,minTempC,maxTempC, medTempC, subdirectory, uvIndex };
   }
 
   

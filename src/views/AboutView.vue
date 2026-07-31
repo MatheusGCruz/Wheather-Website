@@ -15,7 +15,7 @@ import SupportIcon from './../components/icons/IconSupport.vue'
       <DocumentationIcon />
     </template>
     <template #heading>Documentation</template>
-      This project was designed in Vue.js. <br/>The project also uctilizes a C# backend for API controller, and a C# HangFire as scheduler <br/>
+      This project was designed in Vue.js. <br/>Weather data is fetched directly from the <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> API <br/>
   </WelcomeItem>
 
   <WelcomeItem>
@@ -25,7 +25,7 @@ import SupportIcon from './../components/icons/IconSupport.vue'
     <template #heading>Tooling</template>
 
     This project is served and bundled with
-    <a href="https://vite.dev/guide/features.html" target="_blank" rel="noopener">Vite</a>. The backend is server with a C# controller, hosted on premises, and routed throught <a href="https://cloudflare.com" target="_blank" rel="noopener">Cloudflare</a>
+    <a href="https://vite.dev/guide/features.html" target="_blank" rel="noopener">Vite</a>. Weather data is provided by the free <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> API (forecast, geocoding and historical archive).
 
     <br />
 
@@ -39,9 +39,9 @@ import SupportIcon from './../components/icons/IconSupport.vue'
     <template #heading>Ecosystem</template>
 
     Access the Weather API throught the link:<br/>
-    <a href="https://api.antares.ninja/weather" target="_blank" rel="noopener">Weather</a> (pass the city on the URL)<br/><br/>
+    <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Weather</a> (pass the city on the URL)<br/><br/>
     Access the Forecast API throught the link:<br/>
-    <a href="https://api.antares.ninja/weather" target="_blank" rel="noopener">Forecast</a> (pass the city on the URL)<br/><br/>
+    <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">Forecast</a> (pass the city on the URL)<br/><br/>
 
   </WelcomeItem>
 

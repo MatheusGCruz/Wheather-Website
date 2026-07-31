@@ -16,7 +16,7 @@ library.add(fas);
 defineProps<{
   msg2: string;
   subdirectory: {
-      type: String,
+      type: string,
       required: true
     };
 }>()
@@ -37,9 +37,9 @@ const day10 ={
   maxTemp:30,
   humidity:50,
 }
-const day0 = ref<Object>(day10);
-const day1 = ref<Object>(day10);
-const day2 = ref<Object>(day10);
+const day0 = ref<object>(day10);
+const day1 = ref<object>(day10);
+const day2 = ref<object>(day10);
 const report  = ref<string | null>(null);
 
 

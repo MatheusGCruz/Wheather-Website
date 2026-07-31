@@ -21,7 +21,7 @@
         </button>
             </div>
       <div class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto ">
-        <div v-for="item in filteredAndSortedItems" :key="item.id" class="p-4 border rounded shadow gridItem">
+        <div v-for="item in filteredAndSortedItems" :key="item.city + item.date + item.hour" class="p-4 border rounded shadow gridItem">
           <h3 class="text-lg font-bold">{{ item.city }}</h3>
           <p>[ Temperature: {{ item.tempC }}ºC ] 
             [ Humidity {{ item.humidity }}% ]
@@ -42,29 +42,11 @@
   
   <script lang="ts">
 import { ref, computed, defineComponent, onMounted } from "vue";
-  
-  interface Item {
-    id: number;
-    city: string;
-    tempC: number;
-    date: string;
-    hour:number;
-    humidity:number,
-    winddir16Point:string;
-    windspeedKmph:number;
-    precipMM:number;
-    chanceofrain:number;
-    cloudcover:number;
-    uvIndex:number;
-  }
+import { getAnalytics, type AnalyticsItem } from "../services/openmeteo";
   
   export default defineComponent({
     setup() {
-    const items = ref<Item[]>([]);
-
-    const formatDate = (date: Date): string => {
-      return date.toISOString().split('T')[0]; // Formats as YYYY-MM-DD
-    };
+    const items = ref<AnalyticsItem[]>([]);
 
     onMounted(() => {
       fetchAndAddItem();
@@ -73,36 +55,16 @@ import { ref, computed, defineComponent, onMounted } from "vue";
     const fetchAndAddItem = async () => {
       try {
         items.value = [];
-        const response = await fetch("https://api.antares.ninja/analytics/");
-        const data = await response.json();
-        const user = data[0];
-        data.forEach((element: { id: any; city: any; tempC: any; date: any; time: any; humidity:any ; winddir16Point:any; windspeedKmph:any; precipMM:any; chanceofrain:any; cloudcover:any; uvIndex:any}) => {
-          let newdate = new Date(element.date);
-          const newItem: Item = {
-            id: element.id,
-              city: element.city,
-              tempC: element.tempC,              
-              date: formatDate(newdate),
-              hour: element.time/100,
-              humidity : element.humidity,
-              winddir16Point:element.winddir16Point,
-              windspeedKmph:element.windspeedKmph,
-              precipMM:element.precipMM,
-              chanceofrain: element.chanceofrain,
-              cloudcover:element.cloudcover,
-              uvIndex:element.uvIndex,
-            };
-        items.value.push(newItem);
-        console.log(items);
-        });
+        const data = await getAnalytics(7);
+        items.value = data;
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error fetching weather:", error);
       }
     };
       
 
       const search = ref<string>("");
-      const sortKey = ref<keyof Item>("city");
+      const sortKey = ref<keyof AnalyticsItem>("city");
       const sortOrder = ref<"asc" | "desc">("asc");
   
       const filteredAndSortedItems = computed(() => {
@@ -113,7 +75,7 @@ import { ref, computed, defineComponent, onMounted } from "vue";
             )
           )
           .sort((a, b) => {
-            let result = a[sortKey.value] > b[sortKey.value] ? 1 : -1;
+            const result = a[sortKey.value] > b[sortKey.value] ? 1 : -1;
             return sortOrder.value === "asc" ? result : -result;
           });
       });
