@@ -33,24 +33,17 @@
             <font-awesome-icon :icon="['fas', 'fa-clock']" /> Local time: {{ localDate }}
             <span class="tooltip">Date and time of the measurement (in the local time offset )</span>
         </div>
-        <br/><br/>  
-        <div  class="icon-container">
-            <font-awesome-icon :icon="['fas', 'fa-cog']" /> Shadow Date: {{shadowDate}}
-            <span class="tooltip">Date and time for the last check</span>
-        </div>
-        <br/><br/>  
-
     </div>
     <div>
-      <a href="https://weather.antares.ninja/araguari">
+      <router-link to="/araguari">
         Go to Araguari 
-      </a>
-      <a href="https://weather.antares.ninja/araxa">
+      </router-link>
+      <router-link to="/araxa">
         Go to Araxa 
-      </a>
-      <a href="https://weather.antares.ninja/uberlandia">
+      </router-link>
+      <router-link to="/uberlandia">
         Go to Uberlandia 
-      </a>
+      </router-link>
     </div>
     <br/>
     <br/>
@@ -61,66 +54,49 @@
   </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { defineComponent, onMounted, ref } from 'vue';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import axios from 'axios';
+import { getCurrentWeather } from '../services/openmeteo';
 
 library.add(fas);
 
 export default defineComponent({
   setup() {
-    const route = useRoute();  // Access current route
     const subdirectory = ref<string>('');  // Reactive reference to store subdirectory
 
-
-    
     const city = ref<string | null>(null);
     const country = ref<string | null>(null);
-    const temperature = ref<string | null>(null);
-    const preciptation = ref<string | null>(null);
-    const cloudCover = ref<string | null>(null);
-    const humidity = ref<string | null>(null);
-    const uvIndex = ref<string | null>(null);
-    const visibility = ref<string | null>(null);
+    const temperature = ref<number | null>(null);
+    const preciptation = ref<number | null>(null);
+    const cloudCover = ref<number | null>(null);
+    const humidity = ref<number | null>(null);
+    const uvIndex = ref<number | null>(null);
+    const visibility = ref<number | null>(null);
     const loading = ref<boolean>(true);
     const error = ref<string | null>(null);
-    const teste = ref<string | null>(null);
-    const subError = ref<string | null>(null);
     const obsDate = ref<string | null>(null);
-    const shadowDate = ref<string | null>(null);
     const localDate = ref<string | null>(null);
-    const feeling = ref<string | null>(null);
-
-
+    const feeling = ref<number | null>(null);
 
     const fetchData = async () => {
       try {
         subdirectory.value = window.location.pathname.slice(1);
-        subError.value = subdirectory.value;
-        const response = await axios.get(`https://api.antares.ninja/weather/`+subdirectory.value);
-        
-        // Assuming the API returns an icon name or data that determines the icon to use
-        teste.value = response.data.city; // Default to prop if no icon in response
-        temperature.value = response.data.temp_C;
-        preciptation.value = response.data.precipMM;
-        uvIndex.value = response.data.uvIndex;
-        localDate.value =  response.data.localObsDateTime;
-        obsDate.value = response.data.observation_time;
-        shadowDate.value = response.data.lastUpdateDate;
-        city.value = response.data.city;
-        country.value = response.data.country;
-        visibility.value = response.data.visibility;
-        humidity.value = response.data.humidity;
-        cloudCover.value = response.data.cloudcover;
-        feeling.value = response.data.feelsLikeC;
+        const current = await getCurrentWeather(subdirectory.value);
 
-
-      
+        temperature.value = current.temperature;
+        preciptation.value = current.precipitation;
+        uvIndex.value = current.uvIndex;
+        obsDate.value = current.obsDate;
+        localDate.value = current.obsDate;
+        city.value = current.city;
+        country.value = current.country;
+        visibility.value = current.visibility;
+        humidity.value = current.humidity;
+        cloudCover.value = current.cloudCover;
+        feeling.value = current.feeling;
       } catch (err) {
-        error.value = (err as Error).message || 'Failed to fetch icon';
+        error.value = (err as Error).message || 'Failed to fetch weather';
       } finally {
         loading.value = false;
       }
@@ -130,10 +106,8 @@ export default defineComponent({
       fetchData();
     });
 
-    return {country, localDate,obsDate,shadowDate,subError,subdirectory, city, temperature,preciptation,cloudCover,humidity,uvIndex,visibility, teste, loading, error, feeling };
+    return { country, localDate, obsDate, subdirectory, city, temperature, preciptation, cloudCover, humidity, uvIndex, visibility, loading, error, feeling };
   }
-
-  
 });
 </script>
 
