@@ -1,70 +1,78 @@
 <template>
-    <div class="greetings">
+    <div class="current">
       <h1>Current Weather:</h1>
-        <h2>City: {{city}} - {{ country }}</h2>
-        <br/>
+        <div class="weather-details">
         <div class="icon-container">
-            <font-awesome-icon :icon="['fas', 'fa-thermometer-empty']" /> Temperature: {{temperature}}ºC - Sensation {{ feeling }}ºC
+            <font-awesome-icon :icon="['fas', 'fa-thermometer-empty']" /> Temperature: {{truncate2(temperature)}}ºC - Sensation {{ truncate2(feeling) }}ºC
             <span class="tooltip">Temperature (in ºC)</span>
         </div>
         <br/><br/>
 
         <div class="icon-container">
-            <font-awesome-icon :icon="['fas', 'fa-cloud']" /> Cloud Coverage: {{cloudCover}}%
+            <font-awesome-icon :icon="['fas', 'fa-cloud']" /> Cloud Coverage: {{truncate2(cloudCover)}}%
             <span class="tooltip">Cloud Coverage</span>
         </div>
         <br/><br/>
         <div class="icon-container">
-            <font-awesome-icon :icon="['fas', 'fa-tint']" /> Precipitation: {{preciptation}}mm
+            <font-awesome-icon :icon="['fas', 'fa-tint']" /> Precipitation: {{truncate2(preciptation)}}mm
             <span class="tooltip">Preciptation (in mm)</span>
         </div>
         <br/><br/>
         <div  class="icon-container">
-            <font-awesome-icon :icon="['fas', 'fa-sun']" /> UV Index: {{uvIndex}}
+            <font-awesome-icon :icon="['fas', 'fa-sun']" /> UV Index: {{truncate2(uvIndex)}}
             <span class="tooltip">Ultra Violet Index</span>
         </div>
-        <br/><br/>  
+        <br/><br/>
+        <div  class="icon-container">
+            <font-awesome-icon :icon="['fas', 'fa-cloud']" /> Condition: {{condition}}
+            <span class="tooltip">Current meteorological condition</span>
+        </div>
+        <br/><br/>
+        <div  class="icon-container">
+            <font-awesome-icon :icon="['fas', 'fa-tint']" /> Humidity: {{truncate2(humidity)}}%
+            <span class="tooltip">Relative humidity</span>
+        </div>
+        <br/><br/>
+        <div  class="icon-container">
+            <font-awesome-icon :icon="['fas', 'fa-wind']" /> Wind: {{truncate2(windSpeed)}} km/h {{windDirection}}
+            <span class="tooltip">Wind speed and direction</span>
+        </div>
+        <br/><br/>
+        <div  class="icon-container">
+            <font-awesome-icon :icon="['fas', 'fa-eye']" /> Visibility: {{ visibilityKm }} km
+            <span class="tooltip">Visibility in km</span>
+        </div>
+        <br/><br/>
         <div  class="icon-container">
             <font-awesome-icon :icon="['fas', 'fa-clock']" /> Observation Date: {{obsDate}}
             <span class="tooltip">Date and time of the measurement</span>
         </div>
-        <br/><br/>   
+        <br/><br/>
         <div  class="icon-container">
             <font-awesome-icon :icon="['fas', 'fa-clock']" /> Local time: {{ localDate }}
             <span class="tooltip">Date and time of the measurement (in the local time offset )</span>
         </div>
+        </div>
     </div>
-    <div>
-      <router-link to="/araguari">
-        Go to Araguari 
-      </router-link>
-      <router-link to="/araxa">
-        Go to Araxa 
-      </router-link>
-      <router-link to="/uberlandia">
-        Go to Uberlandia 
-      </router-link>
-    </div>
-    <br/>
-    <br/>
-
-    <!-- <div>teste {{ subError }}</div> -->
-    <p v-if="loading">Loading weather...</p>
-    <p v-else-if="error" class="error">{{ error }}</p>
   </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { computed, defineComponent, ref, watch } from 'vue';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { getCurrentWeather } from '../services/openmeteo';
+import { truncate2 } from '../utils/format';
 
 library.add(fas);
 
 export default defineComponent({
-  setup() {
-    const subdirectory = ref<string>('');  // Reactive reference to store subdirectory
-
+  props: {
+    slug: {
+      type: String,
+      required: true,
+    },
+  },
+  setup(props) {
     const city = ref<string | null>(null);
     const country = ref<string | null>(null);
     const temperature = ref<number | null>(null);
@@ -73,16 +81,27 @@ export default defineComponent({
     const humidity = ref<number | null>(null);
     const uvIndex = ref<number | null>(null);
     const visibility = ref<number | null>(null);
+    const windSpeed = ref<number | null>(null);
+    const windDirection = ref<string | null>(null);
+    const condition = ref<string | null>(null);
     const loading = ref<boolean>(true);
     const error = ref<string | null>(null);
     const obsDate = ref<string | null>(null);
     const localDate = ref<string | null>(null);
     const feeling = ref<number | null>(null);
+    const visibilityKm = computed(() =>
+      visibility.value != null ? truncate2(visibility.value / 1000) : null
+    );
 
     const fetchData = async () => {
+      if (!props.slug) {
+        loading.value = false;
+        return;
+      }
       try {
-        subdirectory.value = window.location.pathname.slice(1);
-        const current = await getCurrentWeather(subdirectory.value);
+        loading.value = true;
+        error.value = null;
+        const current = await getCurrentWeather(props.slug);
 
         temperature.value = current.temperature;
         preciptation.value = current.precipitation;
@@ -92,6 +111,9 @@ export default defineComponent({
         city.value = current.city;
         country.value = current.country;
         visibility.value = current.visibility;
+        windSpeed.value = current.windSpeed;
+        windDirection.value = current.windDirection;
+        condition.value = current.condition;
         humidity.value = current.humidity;
         cloudCover.value = current.cloudCover;
         feeling.value = current.feeling;
@@ -102,44 +124,54 @@ export default defineComponent({
       }
     };
 
-    onMounted(() => {
-      fetchData();
-    });
+    watch(() => props.slug, fetchData, { immediate: true });
 
-    return { country, localDate, obsDate, subdirectory, city, temperature, preciptation, cloudCover, humidity, uvIndex, visibility, loading, error, feeling };
+    return { country, localDate, obsDate, city, temperature, preciptation, cloudCover, humidity, uvIndex, visibilityKm, windSpeed, windDirection, condition, loading, error, feeling, truncate2 };
   }
 });
 </script>
 
 <style scoped>
 h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
+  font-weight: 600;
+  font-size: 3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   position: relative;
   top: -10px;
-  color: navy;
+  color: var(--silver);
+  background-image: url('/steel.jfif');
+  background-size: 100% auto;
+  -webkit-text-stroke: 0.2rem var(--ink);
+  border-bottom: 2px solid var(--ember);
+  padding-bottom: 0.2rem;
 }
-h2{
-  color:midnightblue;
+.current{
+  width: 50%;
+  height: 70%;
+  background-image: url('/rust.jpg');
+  background-size: 100% auto;
+  border-radius: 20px;
+  padding: 2%;
+  box-sizing: border-box;
+  overflow: auto;
 }
 
-h3 {
-  font-size: 1.2rem;
-}
-.greetings{
+.weather-details {
   background-image: url('/polished.png');
   background-size: 100% auto;
-  padding:5%
+  padding: 2%;
+  border-radius: 20px;
 }
 
-.greetings h1,
-.greetings h3 {
+.current h1,
+.current h3 {
   text-align: center;
 }
 
 @media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
+  .current h1,
+  .current h3 {
     text-align: left;
   }
 }
@@ -148,12 +180,13 @@ h3 {
   position: relative;
   display: inline-block;
   cursor: pointer;
-  color: midnightblue;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .tooltip {
   visibility: hidden;
-  background-color: black;
+  background-color: var(--ink);
   color: #fff;
   text-align: center;
   padding: 5px 10px;
@@ -170,5 +203,9 @@ h3 {
 .icon-container:hover .tooltip {
   visibility: visible;
   opacity: 1;
+}
+
+.error {
+  color: var(--ember);
 }
 </style>

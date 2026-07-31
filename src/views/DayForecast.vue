@@ -5,7 +5,7 @@
         <div class="icon-container">
             <font-awesome-icon :icon="['fas', 'fa-thermometer-empty']" /> Temperature: 
             <span class="tooltip">Temperature (in ºC)</span>
-            Min: {{ minTempC }}ºC  / Avg: {{ medTempC }}ºC / Max: {{ maxTempC }}ºC 
+            Min: {{ truncate2(minTempC) }}ºC  / Avg: {{ truncate2(medTempC) }}ºC / Max: {{ truncate2(maxTempC) }}ºC 
         </div>
         <br/>
         <div class="icon-container">
@@ -18,32 +18,30 @@
               <p>8-10   - Very High</p>
               <p>11+    - Extreme</p>
             </span>
-            {{ uvIndex }}
+            {{ truncate2(uvIndex) }}
         </div>
         <br/>
         <div class="icon-container">
             <font-awesome-icon :icon="['fas', 'fa-sun']" /> Sun Hours: 
             <span class="tooltip">Sun hours (in ºC)</span>
-            {{sunHour}} 
+            {{truncate2(sunHour)}} 
         </div>
         <br/>
         <div class="icon-container">
             <font-awesome-icon :icon="['fas', 'fa-snowflake']" /> Snow Coverage: 
             <span class="tooltip">Snow coverage in cm</span>
-            {{totalSnow}} 
+            {{truncate2(totalSnow)}} 
         </div>
         <br/>
-        <div>
-          <!-- {{ returnValue }} -->
-        </div>
     </div>
 
 
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, ref, watch } from 'vue';
 import { getDailyForecast } from '../services/openmeteo';
+import { truncate2 } from '../utils/format';
 
 export default defineComponent({
     props: {
@@ -51,9 +49,12 @@ export default defineComponent({
       type: String,
       required: true
     },
+    city: {
+      type: String,
+      required: true
+    },
   },
   setup(props) {
-    const subdirectory = ref<string>('');
     const loading = ref<boolean>(true);
     const minTempC = ref<number>(0);
     const maxTempC = ref<number>(0);
@@ -64,9 +65,10 @@ export default defineComponent({
     const uvIndex = ref<number>(0);
 
     const fetchData = async () => {
+      if (!props.city) return;
       try {
-        subdirectory.value = window.location.pathname.slice(1);
-        const forecast = await getDailyForecast(subdirectory.value);
+        loading.value = true;
+        const forecast = await getDailyForecast(props.city);
         
         forecastDay.value = forecast[Number(props.day)].date;
         minTempC.value = forecast[Number(props.day)].mintempC;
@@ -77,17 +79,14 @@ export default defineComponent({
         totalSnow.value = forecast[Number(props.day)].totalSnow_cm;
 
       } catch {
-        //error.value = (err as Error).message || 'Failed to fetch icon';
       } finally {
         loading.value = false;
       }
     };
 
-    onMounted(() => {
-      fetchData();
-    });
+    watch(() => props.city, fetchData, { immediate: true });
 
-    return {totalSnow, sunHour, forecastDay,minTempC,maxTempC, medTempC, subdirectory, uvIndex };
+    return {totalSnow, sunHour, forecastDay,minTempC,maxTempC, medTempC, uvIndex, truncate2 };
   }
 
   
@@ -102,6 +101,17 @@ export default defineComponent({
   margin:2px;
   border-radius: 20px;
 }
+h2 {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: var(--mist);
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-left: 3px solid var(--ember);
+  border-radius: 4px;
+}
 h1 {
   font-weight: 500;
   font-size: 2.6rem;
@@ -113,14 +123,8 @@ h3 {
   font-size: 1.2rem;
 }
 
-.greetings h1,
-.greetings h3 {
-  text-align: center;
-}
-
 @media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
+  .forecasts h3 {
     text-align: left;
   }
 }
@@ -129,11 +133,12 @@ h3 {
   position: relative;
   display: inline-block;
   cursor: pointer;
+  font-variant-numeric: tabular-nums;
 }
 
 .tooltip {
   visibility: hidden;
-  background-color: black;
+  background-color: var(--ink);
   color: #fff;
   text-align: center;
   padding: 5px 10px;
@@ -148,7 +153,7 @@ h3 {
 }
 
 .tooltip p{
-  background-color: black;
+  background-color: transparent;
   color: #fff;
 }
 

@@ -1,0 +1,4 @@
+export function truncate2(value: number | null | undefined): number | null {
+  if (value == null) return null;
+  return Math.trunc(value * 100) / 100;
+}
